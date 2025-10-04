@@ -1,0 +1,129 @@
+class Estudiante
+  attr_accessor :nombre, :carne, :notas
+
+  def initialize(nombre, carne, notas = [])
+    @nombre = nombre
+    @carne = carne
+    @notas = notas
+  end
+
+  def agregar_nota(nota)
+    @notas << nota
+  end
+
+  def promedio
+    return 0 if @notas.empty?
+    @notas.sum.to_f / @notas.size
+  end
+
+  # Convierte estudiante a formato de texto para guardar
+  def to_file
+    "#{@carne},#{@nombre},#{@notas.join("|")}"
+  end
+
+  # Crea un estudiante a partir de una línea de archivo
+  def self.from_file(linea)
+    carne, nombre, notas_str = linea.strip.split(",", 3)
+    notas = notas_str ? notas_str.split("|").map(&:to_f) : []
+    Estudiante.new(nombre, carne, notas)
+  end
+end
+
+# Cargar estudiantes desde archivo
+def cargar_estudiantes
+  estudiantes = []
+  if File.exist?("alumnos.txt")
+    File.readlines("alumnos.txt").each do |linea|
+      estudiantes << Estudiante.from_file(linea)
+    end
+  end
+  estudiantes
+end
+
+# Guardar estudiantes en archivo
+def guardar_estudiantes(estudiantes)
+  File.open("alumnos.txt", "w") do |f|
+    estudiantes.each { |e| f.puts e.to_file }
+  end
+end
+
+# Mostrar menú
+def mostrar_menu
+  puts "===== SISTEMA DE GESTIÓN DE ALUMNOS ====="
+  puts "1. Registrar estudiante"
+  puts "2. Ingresar notas"
+  puts "3. Consultar promedio por estudiante"
+  puts "4. Listar todos los estudiantes"
+  puts "5. Salir"
+  print "Seleccione una opción: "
+end
+
+# Programa principal
+estudiantes = cargar_estudiantes
+opcion = 0
+
+while opcion != 5
+  mostrar_menu
+  opcion = gets.chomp.to_i
+
+  case opcion
+  when 1
+    print "Ingrese nombre del estudiante: "
+    nombre = gets.chomp
+    print "Ingrese carné del estudiante: "
+    carne = gets.chomp
+    estudiantes << Estudiante.new(nombre, carne)
+    guardar_estudiantes(estudiantes)
+    puts ">> Estudiante registrado correctamente."
+
+  when 2
+    if estudiantes.empty?
+      puts ">> No hay estudiantes registrados."
+    else
+      print "Ingrese el carné del estudiante: "
+      carne = gets.chomp
+      estudiante = estudiantes.find { |e| e.carne == carne }
+      if estudiante
+        print "Ingrese la nota: "
+        nota = gets.chomp.to_f
+        estudiante.agregar_nota(nota)
+        guardar_estudiantes(estudiantes)
+        puts ">> Nota registrada."
+      else
+        puts ">> Estudiante no encontrado."
+      end
+    end
+
+  when 3
+    if estudiantes.empty?
+      puts ">> No hay estudiantes registrados."
+    else
+      print "Ingrese el carné del estudiante: "
+      carne = gets.chomp
+      estudiante = estudiantes.find { |e| e.carne == carne }
+      if estudiante
+        puts ">> Promedio de #{estudiante.nombre}: #{estudiante.promedio.round(2)}"
+      else
+        puts ">> Estudiante no encontrado."
+      end
+    end
+
+  when 4
+    if estudiantes.empty?
+      puts ">> No hay estudiantes registrados."
+    else
+      puts "===== LISTA DE ESTUDIANTES ====="
+      estudiantes.each do |e|
+        puts "Carné: #{e.carne} | Nombre: #{e.nombre} | Promedio: #{e.promedio.round(2)}"
+      end
+    end
+
+  when 5
+    puts ">> Saliendo del sistema. ¡Hasta pronto!"
+
+  else
+    puts ">> Opción inválida, intente de nuevo."
+  end
+
+  puts "\n"
+end
