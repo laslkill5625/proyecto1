@@ -86,9 +86,9 @@ while opcion != 5
       if estudiante
         print "Ingrese la nota: "
         nota = gets.chomp.to_f
-        estudiante.agregar_nota(nota)
-        guardar_estudiantes(estudiantes)
+         estudiante.agregar_nota(nota)
         puts ">> Nota registrada."
+        guardar_estudiantes(estudiantes)
       else
         puts ">> Estudiante no encontrado."
       end
